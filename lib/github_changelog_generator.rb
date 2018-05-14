@@ -18,6 +18,9 @@ require "github_changelog_generator/generator/generator"
 require "github_changelog_generator/version"
 require "github_changelog_generator/reader"
 
+require 'slack-notifier'
+require 'git'
+
 # The main module, where placed all classes (now, at least)
 module GitHubChangelogGenerator
   # Main class and entry point for this script.
@@ -39,6 +42,14 @@ module GitHubChangelogGenerator
         File.open(output_filename, "wb") { |file| file.write(log) }
         puts "Done!"
         puts "Generated log placed in #{Dir.pwd}/#{output_filename}"
+
+        # Commit change and push to git
+        g = Git.open(working_dir, :log => Logger.new(STDOUT))
+        puts g.log
+
+        # Send the message to slack
+        notifier = Slack::Notifier.new "https://hooks.slack.com/services/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"
+        notifier.ping "New Change log done !"
       else
         puts log
       end
